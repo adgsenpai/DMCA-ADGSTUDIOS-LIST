@@ -41,7 +41,7 @@ This automation will not only streamline our process but also ensure that our li
 We believe that these advancements will significantly enhance the way we handle DMCA requests, making our response more proactive and data-driven.
 
 ## Contact
-For any queries or further assistance, please reach out via [email link](mailto:animeflix@adgstudios.co.za).
+For any queries or further assistance, please reach out via [email link](mailto:adg@adgstudios.co.za).
 
 ## License
 [MIT License](LICENSE)
