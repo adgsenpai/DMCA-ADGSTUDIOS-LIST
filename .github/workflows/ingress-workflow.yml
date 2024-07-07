@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup:
+  ingress_workflow:
     runs-on: self-hosted
-    name: Setup
+    name: Ingress Workflow
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -16,65 +16,25 @@ jobs:
       - name: Install unzip
         run: sudo apt-get install -y unzip
 
-  script:
-    runs-on: self-hosted
-    name: Data Mining Google Transparency Report
-    needs: setup
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Make script executable
         run: chmod +x download_unzip_cleanup.sh
 
       - name: Run download_unzip_cleanup.sh
         run: ./download_unzip_cleanup.sh
 
-  install:
-    runs-on: self-hosted
-    name: Install Dependencies
-    needs: script
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Install Python requirements
         run: |        
           pip install -r requirements.txt
 
-  run_ingress:
-    runs-on: self-hosted
-    name: Run Ingress
-    needs: install
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Run ingress.py
         run: |
           python3 ingress.py
-
-  run_update:
-    runs-on: self-hosted
-    name: Run Update
-    needs: run_ingress
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
 
       - name: Run update.py
         run: |
           python3 update.py
         env:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-
-  commit_and_push:
-    runs-on: self-hosted
-    name: Commit and Push
-    needs: run_update
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
 
       - name: Commit and push changes
         run: |
