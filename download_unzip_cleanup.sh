@@ -2,7 +2,7 @@
 
 # Configuration
 ZIP_URL="https://storage.googleapis.com/transparencyreport/google-websearch-copyright-removals.zip"
-DOWNLOAD_DIR="./"
+DOWNLOAD_DIR="."
 CSV_DIR="$DOWNLOAD_DIR/google-websearch-copyright-removals"
 ZIP_FILE="$DOWNLOAD_DIR/google-websearch-copyright-removals.zip"
 
