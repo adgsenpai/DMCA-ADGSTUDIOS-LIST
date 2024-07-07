@@ -1,4 +1,3 @@
-
 # DMCA-ADGSTUDIOS-LIST
 
 <img src="https://github.com/adgsenpai/DMCA-ADGSTUDIOS-LIST/assets/45560312/d9eb6380-4c09-4cb6-8c09-b363691e7984" width="250px">
@@ -23,22 +22,138 @@ If you wish to submit a DMCA takedown request for a page hosted under the `adgst
 
 4. **Wait for Review**: Once submitted, your request will be reviewed. If the request is deemed valid, it will be approved and merged into the main list.
 
-## Dynamic Content Management
-Upon the approval and merging of a DMCA request, our content hosting environment will dynamically update to reflect these changes. This ensures immediate compliance with DMCA regulations.
+## Automated DMCA Link Updates
 
-## Future Work
+We have implemented a robust automation process using GitHub Actions to handle DMCA link updates efficiently. Here's a detailed look at how we manage these updates:
 
-### Integration with Lumen Database
-We are currently exploring opportunities to enhance the efficiency and scope of our DMCA management process by integrating with the Lumen Database. Lumen Database, managed by the Berkman Klein Center for Internet & Society at Harvard University, provides a comprehensive and public database of DMCA notices and requests.
+### Workflow Overview
 
-Our goal is to dynamically fetch data from the Lumen Database to keep our DMCA list up-to-date with the latest and most accurate information. However, this integration is contingent upon receiving an API key from Lumen Database. We are in the process of obtaining this key and hope to implement this feature in the near future.
+1. **Setup**: The workflow begins by setting up the necessary environment. This includes checking out the repository and installing required packages.
+2. **Script Execution**: The `download_unzip_cleanup.sh` script is made executable and then run to handle necessary cleanup operations.
+3. **Dependencies Installation**: Python dependencies listed in `requirements.txt` are installed.
+4. **Ingress Script Execution**: The `ingress.py` script is executed to perform ingress operations.
+5. **Update Script Execution**: The `update.py` script is run to update the `list.txt` file with new DMCA links.
+6. **Commit and Push Changes**: Any changes made to the repository are committed and pushed back to the main branch.
 
-### Automation with GitHub Actions
-Once we have access to the Lumen Database API, we plan to automate the update process of the DMCA list. By leveraging GitHub Actions, our system will be able to automatically fetch new DMCA data from the Lumen Database on a daily basis and update the list accordingly.
+### Detailed Workflow Steps
 
-This automation will not only streamline our process but also ensure that our list is constantly refreshed with the latest information, making our compliance with DMCA requests more efficient and reliable.
+#### `download_unzip_cleanup.sh`
 
-We believe that these advancements will significantly enhance the way we handle DMCA requests, making our response more proactive and data-driven.
+This script handles the downloading, unzipping, and cleanup of necessary files.
+
+#### `ingress.py`
+
+This script performs ingress operations as part of our automation process.
+
+#### `update.py`
+
+The `update.py` script updates the `list.txt` file with new URLs from `filtered_urls.csv`. Here’s a step-by-step breakdown of what the script does:
+
+- **Read Existing list.txt**: Reads the current list of URLs from `list.txt`.
+- **Read New URLs from filtered_urls.csv**: Reads new URLs from `filtered_urls.csv`, removes the `https://` prefix, and excludes the domain `anime.adgstudios.co.za/`.
+- **Check for Duplicates and Add Unique URLs**: Compares the new URLs against the existing list and adds only the unique ones.
+- **Write Updated List Back to list.txt**: Appends the unique new URLs to `list.txt`, ensuring no empty lines at the end.
+- **Generate and Send an Email Report**: Sends an email report with the list of newly added URLs.
+
+### GitHub Actions Configuration
+
+The GitHub Actions workflow file (`.github/workflows/ingress-workflow.yml`) runs the entire process at midnight every day and on any push to the main branch.
+
+```yaml
+name: Ingress Workflow
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Runs at midnight every day
+  push:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: self-hosted
+    name: Setup
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install unzip
+        run: sudo apt-get install -y unzip
+
+  script:
+    runs-on: self-hosted
+    name: Script Execution
+    needs: setup
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Make script executable
+        run: chmod +x download_unzip_cleanup.sh
+
+      - name: Run download_unzip_cleanup.sh
+        run: ./download_unzip_cleanup.sh
+
+  install:
+    runs-on: self-hosted
+    name: Install Dependencies
+    needs: script
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python requirements
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install -r requirements.txt
+
+  run_ingress:
+    runs-on: self-hosted
+    name: Run Ingress
+    needs: install
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run ingress.py
+        run: |
+          . venv/bin/activate
+          python ingress.py
+
+  run_update:
+    runs-on: self-hosted
+    name: Run Update
+    needs: run_ingress
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run update.py
+        run: |
+          . venv/bin/activate
+          python update.py
+        env:
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+
+  commit_and_push:
+    runs-on: self-hosted
+    name: Commit and Push
+    needs: run_update
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Update from GitHub Actions"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 
 ## Contact
 For any queries or further assistance, please reach out via [email link](mailto:adg@adgstudios.co.za).
