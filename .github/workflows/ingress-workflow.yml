@@ -40,6 +40,7 @@ jobs:
         run: |
           git config --local user.email "adg@adgstudios.co.za"
           git config --local user.name "adgsenpai"
+          git pull
           git add .
           git commit -m "DMCA Update $(git rev-parse --short HEAD)"
           git push
